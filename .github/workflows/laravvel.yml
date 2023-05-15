@@ -1,0 +1,27 @@
+
+name: Deploy
+# Trigger the workflow on push and
+# pull request events on the master branch
+on:
+  push:
+    branches: ["master"]
+  pull_request:
+    branches: ["master"]
+# Authenticate to the the server via ssh
+# and run our deployment script
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - name: executing remote ssh commands using ssh key
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ SERVER_SSH_KEY }}
+        username: ${{ secrets.SSH_USER_NAME }}
+        key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        port: 22
+        script: |
+          cd /var/www/html/laravell-github-action
+          git pull origin master
+          composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
+          php artisan key:generate
